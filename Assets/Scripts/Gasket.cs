@@ -11,7 +11,6 @@ public class Gasket : MonoBehaviour {
 	private List<Vector3> locs = new List<Vector3>();
 	private float twoThirds = 2f/3f;
 
-
 	void Start() {
 		GaskIt(new Vector3(-spacing, 0f, -0.57735f * spacing) + transform.position, 
 					 new Vector3(spacing, 0f, -0.577357f * spacing) + transform.position,
@@ -42,7 +41,7 @@ public class Gasket : MonoBehaviour {
 	private void AddIfNotAlreadyPresent(Vector3 loc) {
 		if(!locs.Contains(loc)) {
 			locs.Add(loc);
-			GameObject copy = Instantiate(prefab, loc, Quaternion.identity) as GameObject;
+			GameObject copy = Instantiate(prefab, loc, prefab.transform.rotation) as GameObject;
 			copies.Add(copy);
 		}
 	}
