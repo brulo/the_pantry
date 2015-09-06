@@ -10,13 +10,36 @@ public class Gasket : MonoBehaviour {
 	private List<GameObject> copies = new List<GameObject>();
 	private List<Vector3> locs = new List<Vector3>();
 	private float twoThirds = 2f/3f;
+	private bool inPlace = true;
+	private bool interruptReset = false;
 
 	void Start() {
-		GaskIt(new Vector3(-spacing, 0f, -0.57735f * spacing) + transform.position, 
+		GaskIt(new Vector3(-spacing, 0f, -0.577357f * spacing) + transform.position, 
 					 new Vector3(spacing, 0f, -0.577357f * spacing) + transform.position,
 					 new Vector3(0f, 0f, 1.1547f * spacing) + transform.position,
 					 new Vector3(0f, 1.7320508074f * spacing, 0f) + transform.position,
 					 size, 1f);
+	}
+
+	void Update() {
+		if(Input.GetKeyDown(KeyCode.E))
+			Explode();
+	}
+
+	public void Explode() {
+		inPlace = false;
+		interruptReset = true;
+		Vector3 explosionPosition = new Vector3(0f, 
+																						0.8660254037f * spacing, 
+																						0f) + transform.position;
+		for(int i = 0; i < copies.Count; i++) {
+			Rigidbody rb = copies[i].GetComponent<Rigidbody>();
+			rb.constraints = RigidbodyConstraints.None;
+			rb.AddExplosionForce(Random.Range(600f, 1000f), // force
+													 explosionPosition,         // position
+													 1000f,											// radius 
+													 5f); 											// mode
+		}
 	}
 
 	private void GaskIt(Vector3 a, Vector3 b, Vector3 c, Vector3 d, 
@@ -42,6 +65,7 @@ public class Gasket : MonoBehaviour {
 		if(!locs.Contains(loc)) {
 			locs.Add(loc);
 			GameObject copy = Instantiate(prefab, loc, prefab.transform.rotation) as GameObject;
+			copy.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
 			copies.Add(copy);
 		}
 	}
