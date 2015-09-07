@@ -9,12 +9,14 @@ public class Gasket : MonoBehaviour {
 
 	private List<GameObject> copies = new List<GameObject>();
 	private List<Vector3> locs = new List<Vector3>();
+  private Quaternion defaultRotation;
 	private float twoThirds = 2f/3f;
 	private bool inPlace = true;
 	private bool interruptReset = false;
   private bool resetting = false;
 
 	void Start() {
+    defaultRotation = prefab.transform.rotation;
 		GaskIt(new Vector3(-spacing, 0f, -0.577357f * spacing) + transform.position, 
 					 new Vector3(spacing, 0f, -0.577357f * spacing) + transform.position,
 					 new Vector3(0f, 0f, 1.1547f * spacing) + transform.position,
@@ -72,12 +74,12 @@ public class Gasket : MonoBehaviour {
       }
       i += Time.deltaTime * rate;
       thisTransform.position = Vector3.Lerp(startPos, endPos, i);
-      thisTransform.rotation = Quaternion.Slerp(startRot, Quaternion.identity, i);
+      thisTransform.rotation = Quaternion.Slerp(startRot, defaultRotation, i);
       yield return 0;
     }
 
     thisTransform.position = endPos;
-    thisTransform.rotation = Quaternion.identity;
+    thisTransform.rotation = defaultRotation;
     rbody.constraints = RigidbodyConstraints.FreezeAll;
     resetting = false;
     inPlace = true;
@@ -105,7 +107,7 @@ public class Gasket : MonoBehaviour {
 	private void AddIfNotAlreadyPresent(Vector3 loc) {
 		if(!locs.Contains(loc)) {
 			locs.Add(loc);
-			GameObject copy = Instantiate(prefab, loc, prefab.transform.rotation) as GameObject;
+			GameObject copy = Instantiate(prefab, loc, defaultRotation) as GameObject;
 			copy.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
 			copies.Add(copy);
 		}
