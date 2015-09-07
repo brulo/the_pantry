@@ -15,13 +15,15 @@ public class Gasket : MonoBehaviour {
 	private bool interruptReset = false;
   private bool resetting = false;
 
+
 	void Start() {
     defaultRotation = prefab.transform.rotation;
 		GaskIt(new Vector3(-spacing, 0f, -0.577357f * spacing) + transform.position, 
 					 new Vector3(spacing, 0f, -0.577357f * spacing) + transform.position,
 					 new Vector3(0f, 0f, 1.1547f * spacing) + transform.position,
 					 new Vector3(0f, 1.7320508074f * spacing, 0f) + transform.position,
-					 size, 1f);
+					 size, 
+           1f);
 	}
 
 	void Update() {
@@ -48,39 +50,38 @@ public class Gasket : MonoBehaviour {
 	}
 
   public void Reset() {
-    Debug.Log("Reset()");
     if(!resetting && !inPlace) {
-      Debug.Log("Resetting...");
       resetting = true;
       interruptReset = false;
       for(int z = 0; z < locs.Count; z++){
-        StartCoroutine(MoveObject(copies[z].GetComponent<Rigidbody>(), copies[z].transform, copies[z].transform.position, locs[z], 1.2f));
+        StartCoroutine(MoveObject(copies[z], locs[z], 1.2f));
         //copies[z].transform.rotation = Quaternion.identity;
         //copies[z].rigidbody.constraints = RigidbodyConstraints.FreezeAll;
       }
     }
   }
 
-  IEnumerator MoveObject(Rigidbody rbody, Transform thisTransform, 
-                         Vector3 startPos, Vector3 endPos, float time) {
-    float i = 0f;
+  IEnumerator MoveObject(GameObject gameObject, Vector3 endPosition, float time) {
     float rate = 1f / time;
-    Quaternion startRot = thisTransform.rotation;
+    Vector3 startPosition = gameObject.transform.position;
+    Quaternion startRotation = gameObject.transform.rotation;
 
+    float i = 0f;
     while (i < 1f) {
       if(interruptReset) {
         resetting = false;
         yield break;
       }
       i += Time.deltaTime * rate;
-      thisTransform.position = Vector3.Lerp(startPos, endPos, i);
-      thisTransform.rotation = Quaternion.Slerp(startRot, defaultRotation, i);
+      gameObject.transform.position = Vector3.Lerp(startPosition, endPosition, i);
+      gameObject.transform.rotation = Quaternion.Slerp(startRotation, defaultRotation, i);
       yield return 0;
     }
 
-    thisTransform.position = endPos;
-    thisTransform.rotation = defaultRotation;
-    rbody.constraints = RigidbodyConstraints.FreezeAll;
+    gameObject.transform.position = endPosition;
+    gameObject.transform.rotation = defaultRotation;
+    gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+
     resetting = false;
     inPlace = true;
   }
