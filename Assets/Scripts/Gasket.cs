@@ -12,6 +12,7 @@ public class Gasket : MonoBehaviour {
 	private float twoThirds = 2f/3f;
 	private bool inPlace = true;
 	private bool interruptReset = false;
+  private bool resetting = false;
 
 	void Start() {
 		GaskIt(new Vector3(-spacing, 0f, -0.577357f * spacing) + transform.position, 
@@ -24,6 +25,8 @@ public class Gasket : MonoBehaviour {
 	void Update() {
 		if(Input.GetKeyDown(KeyCode.E))
 			Explode();
+    if(Input.GetKeyDown(KeyCode.R))
+      Reset();
 	}
 
 	public void Explode() {
@@ -41,6 +44,44 @@ public class Gasket : MonoBehaviour {
 													 5f); 											// mode
 		}
 	}
+
+  public void Reset() {
+    Debug.Log("Reset()");
+    if(!resetting && !inPlace) {
+      Debug.Log("Resetting...");
+      resetting = true;
+      interruptReset = false;
+      for(int z = 0; z < locs.Count; z++){
+        StartCoroutine(MoveObject(copies[z].GetComponent<Rigidbody>(), copies[z].transform, copies[z].transform.position, locs[z], 1.2f));
+        //copies[z].transform.rotation = Quaternion.identity;
+        //copies[z].rigidbody.constraints = RigidbodyConstraints.FreezeAll;
+      }
+    }
+  }
+
+  IEnumerator MoveObject(Rigidbody rbody, Transform thisTransform, 
+                         Vector3 startPos, Vector3 endPos, float time) {
+    float i = 0f;
+    float rate = 1f / time;
+    Quaternion startRot = thisTransform.rotation;
+
+    while (i < 1f) {
+      if(interruptReset) {
+        resetting = false;
+        yield break;
+      }
+      i += Time.deltaTime * rate;
+      thisTransform.position = Vector3.Lerp(startPos, endPos, i);
+      thisTransform.rotation = Quaternion.Slerp(startRot, Quaternion.identity, i);
+      yield return 0;
+    }
+
+    thisTransform.position = endPos;
+    thisTransform.rotation = Quaternion.identity;
+    rbody.constraints = RigidbodyConstraints.FreezeAll;
+    resetting = false;
+    inPlace = true;
+  }
 
 	private void GaskIt(Vector3 a, Vector3 b, Vector3 c, Vector3 d, 
 			int n, float scale) {
