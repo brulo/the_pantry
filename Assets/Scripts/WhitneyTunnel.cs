@@ -9,20 +9,20 @@ public class WhitneyTunnel : MonoBehaviour {
   public float spacing; 
 
   private GameObject[] copies; 
+  private Light[] lights;
   private float degrees = 0f; 
   private float rads = 0f; 
 
 
   void Start() { 
     copies = new GameObject[numberOfCopies]; 
+    lights = new Light[numberOfCopies];
     for(int i = 0; i < copies.Length; i++) { 
       GameObject copy = Instantiate(prefab,  
                                     transform.position, 
                                     Quaternion.identity) as GameObject; 
-      // copy.transform.Rotate(0, 0, 180); 
-      // HSBColor color = new HSBColor((i * 1f) / copies.Length, 1f, 1f); 
-      // set color without send message? 
       copies[i] = copy; 
+      lights[i] = copy.transform.Find("Light").GetComponent<Light>();
     } 
   } 
 
@@ -40,6 +40,9 @@ public class WhitneyTunnel : MonoBehaviour {
 
         float zRotate = -1 * (Time.deltaTime * rate * (i + 1)); 
         copies[i].transform.Rotate(0, 0, zRotate); 
+
+        HSBColor color = new HSBColor((i * 1f) / copies.Length, 1f, 1f);
+        lights[i].color = color.ToColor();
       } 
     } 
   } 
